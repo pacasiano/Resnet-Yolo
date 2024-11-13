@@ -12,8 +12,11 @@ img_name = sys.argv[1]
 
 
 img = cv2.imread(img_name)
-img_float = cv2.resize(img, (224,224)).astype(np.float32)
+# img_float = cv2.resize(img, (224,224)).astype(np.float32)
+# img_float -= 128
+img_float = cv2.resize(img, (224, 224)).astype(np.float32)
 img_float -= 128
+# img_float /= 127.5
 
 img_in = np.expand_dims(img_float, axis=0)
 

@@ -9,31 +9,37 @@ from scipy.special import expit as sigmoid
 import sys
 
 import tensorflow as tf
-from keras.layers import Input
+from keras._tf_keras.keras.layers import Input
 from keras import layers
-from keras.layers import Dense
-from keras.layers import Dropout
-from keras.layers import LeakyReLU
-from keras.layers import Activation
-from keras.layers import Flatten
-from keras.layers import Conv2D
-from keras.layers import MaxPooling2D
-from keras.layers import GlobalMaxPooling2D
-from keras.layers import ZeroPadding2D
-from keras.layers import AveragePooling2D
-from keras.layers import GlobalAveragePooling2D
-from keras.layers import BatchNormalization
-from keras.models import Model
-from keras.preprocessing import image
-import keras.backend as K
-from keras.utils import layer_utils
-from keras.utils.data_utils import get_file
-from keras.applications.imagenet_utils import decode_predictions
-from keras.applications.imagenet_utils import preprocess_input
-from keras.applications.imagenet_utils import _obtain_input_shape
-from keras.engine.topology import get_source_inputs
-from keras.callbacks import ModelCheckpoint
-from keras.optimizers import Adam
+from keras._tf_keras.keras.layers import Dense
+from keras._tf_keras.keras.layers import Dropout
+from keras._tf_keras.keras.layers import LeakyReLU
+from keras._tf_keras.keras.layers import Activation
+from keras._tf_keras.keras.layers import Flatten
+from keras._tf_keras.keras.layers import Conv2D
+from keras._tf_keras.keras.layers import MaxPooling2D
+from keras._tf_keras.keras.layers import GlobalMaxPooling2D
+from keras._tf_keras.keras.layers import ZeroPadding2D
+from keras._tf_keras.keras.layers import AveragePooling2D
+from keras._tf_keras.keras.layers import GlobalAveragePooling2D
+from keras._tf_keras.keras.layers import BatchNormalization
+from keras._tf_keras.keras.models import Model
+# from keras._tf_keras.keras.preprocessing import image
+from keras._tf_keras.keras.preprocessing import image
+import keras._tf_keras.keras.backend as K
+from tensorflow.python.keras.utils import layer_utils
+from tensorflow.python.keras.utils.data_utils import get_file
+# from keras._tf_keras.keras.applications.imagenet_utils import decode_predictions
+from keras._tf_keras.keras.applications.imagenet_utils import decode_predictions
+# from keras._tf_keras.keras.applications.imagenet_utils import preprocess_input
+from keras._tf_keras.keras.applications.imagenet_utils import preprocess_input
+from keras_applications.imagenet_utils import _obtain_input_shape
+from tensorflow.python.keras.utils.layer_utils import get_source_inputs
+from keras._tf_keras.keras.callbacks import ModelCheckpoint
+# from keras._tf_keras.keras.optimizers import Adam
+# from keras._tf_keras.keras.optimizer_v1 import Adam
+from keras._tf_keras.keras.optimizers import Adam
+from keras._tf_keras.keras.layers import UpSampling2D
 
 ### Below base code for the ResNet50 model is taken from https://github.com/fchollet/deep-learning-models.git
 ### it has been modified to have YOLO classifier in the end layers (see ResNet50() function)
@@ -122,6 +128,9 @@ def ResNet50(include_top=False, load_weight=True, weights='imagenet',
              input_tensor=None, input_shape=None,
              pooling=None,
              classes=1000):
+
+    input_tensor = Input(shape=input_shape)
+
     """Instantiates the ResNet50 architecture.
 
     Optionally loads weights pre-trained
@@ -242,8 +251,13 @@ def ResNet50(include_top=False, load_weight=True, weights='imagenet',
         # C: classes: 3
         # Coords: x, y, w, h per box: 4
         # tensor length: SS * (C +B(5) ) : 363--242--968 => 1573
-        x = Dense(11*11*(3+2*5), activation='linear', name='yolo_clf_3')(x)
+        # x = Dense(11*11*(3+2*5), activation='linear', name='yolo_clf_3')(x)
 
+        num_classes = 3
+        num_boxes = 2
+        grid_size = 11
+
+        x = Dense(grid_size * grid_size * (num_classes + num_boxes * 5), activation='linear', name='yolo_clf_3')(x)
 
     # Ensure that the model takes into account
     # any potential predecessors of `input_tensor`.
@@ -252,7 +266,7 @@ def ResNet50(include_top=False, load_weight=True, weights='imagenet',
     else:
         inputs = img_input
     # Create model.
-    model = Model(inputs, x, name='resnet50_yolo')
+    model = Model(inputs=input_tensor, outputs=x, name='resnet50_yolo')
 
     # load weights
     if load_weight:
